@@ -1,0 +1,1526 @@
+RelLib Documentation
+Created December 28,2001
+
+VERSION 5.0(Jul. 16, 2004) Pls. Read Readme.TXT for a summary of additions......
+VERSION 4.1(Sept. 1, 2003) VERSION 4(July 9,2003)
+VERSION 3.2(May 11,2003) 
+VERSION 3.0(September 22,2002) 
+VERSION 2.0(June 11,2002) 
+
+Description:  RelLib is a VERY FAST Screen 13 Game Programming library made mostly in assembly.  This was made with only one thing in mind: SPEED!!!( at least with the speed intensive routines :) ie Sprites!.    I made the Sprite routines and some other speed intensive routines as fast as I can.  And also made them support clipping ;-).  But one thing I discovered while making this Beta version is, IT COULD ALWAYS GET BETTER!!!!! So if any of you could make my routines faster, I would like to hear from you.  :)  I'm just learning the joy and torture of ASM programming but I made this with all of what I can give you as of the moment.  I also made this to use PP256's powerful features and is compatible with QB's GET and PUT statements. :)
+
+*And because all of the OBJs are Independent of each other, you can add any of RelLib's routines
+	to any lib of your choice. ;*)
+
+Developer: Richard Eric M. Lope BSN RN aka Relsoft/Genso Sanzo
+Email: vic_viperph@yahoo.com
+Degree: BS Nursing
+SMS: +6391730219557
+Address: Blk 36, Lot 8, Florvel Homes Subdv. Buray, Oton, Iloilo, Philippines
+Site: Http://Rel.BetterWebber.com
+
+Current Projects:
+	Frantic Journey - A space shooter ala Gradius(Adigun, Eebs, and Beta)
+	RelLib
+	AFlib -RelLib in CALL ABSOLUTE format( with L_O_J)
+	Dwoods3 (Jocke and Jofers)
+	
+	
+Disclaimer: I am in no way responsible to any effects of this game development utility to your life.Blah,Blah,Blah,Blah.........
+		Use this routines as much as you want.  If you could make something out of this,
+		 I would love to hear from you. You could also email your games to me.  
+		No sound routine is going to be included with this and any future updates of RelLib.  
+		Why? Aside from the fact that I Don't have a speaker,  I have found the best to be 
+		DS4QB++ by Lithium.
+History: Started making my Pset routine November 28,2001......
+
+Note: This library came into being when the artist I was working on with Frantic Journey, Eero Pitkanen(Finland), wanted to have translucency in our sprites.  As we are using COSMOX, and CosmoX uses blender maps for translucency, and I hate blender maps(they're memory hogs), I decided that the best way is to make a CosmoX compatible translucent routine.   I already know a lot of translucency algorithms so I assumed that it would be easy for me to make it in ASM......... I was wrong.
+         So I searched the net for some useful info regarding assembly programming.  Well, the best introductory tutorial I have found is from CGI JOE of Shimmer Ribbonsoft(They also developed a Great Library: RSVGALib).  I also have some pure QB double buffering routines that I have converted into ASM code. ex. are the Sprite Routines. And it really was a pain to convert. Coded this entirely on a 486 and prevented as much AGI's as I can so this would run better on a Pentium.
+	BTW.  Don't forget to check out other Libs.  My personal recommendation: UGL.  The fastest lib out there!!! Made by
+V1ctor and Blitz.
+
+Requirements:
+	*386 or better CPU
+	*Qb4.5(but would work with VBDOS and QB7.1)
+	*VGA monitor
+
+To USE:	
+	*Type QB/L Rel/ah
+
+Important!!!!!!!!!!!!
+         For Procedures/Subs/Functions which uses/writes/draws anything  to the VIDEO BUFFER ie PAGES,   The First parameter is always the DESTINATION buffer/segment. I have done this to prevent crashes and for this library to be EASY to learn and use.
+
+	ex:  RelPcopy  VIDEO,Varseg(Vpage(0))
+		'copies the contents of VPAGE to the VIDEO screen
+	       RelPset    Varseg(Vpage(0)),10,10,15
+		'puts a pixel to Vpage at position 10,10 color 15
+	       RelSpriteTrans VIDEO,100,100,Varseg(PicArray(0)),Varptr(PicArray(0))
+		'puts a Sprite(PicArray) on the Screen at position 100,100 translucently
+
+Procedure and function Summary:
+
+SUBS/FUNCTIONS with (**) need a gradient palette to work well ie Translucency.  Use pp256 to simplify things. :)
+For best translucency results, use a 16 color gradient palette. :)
+*Note that PP256 segment starts from 1 not zero.
+'/==============SCREEN SWITCHING===================================
+DECLARE SUB RelInitVGA13 ()
+	Description: Initializes the screen to SCREEN 13
+	How to Use: RelInitVGA13
+	Notes: Like most of the third party libs, you could not use some of QB's GFX statements
+		after you do this.  You could alternately use SCREEN 13 if you  like and the libs
+		routine won't complain, but this would make your exe's smaller.
+DECLARE SUB RelInitText ()
+	Description: Initializes the screen to SCREEN 0, width 80
+	How to Use: RelInitText
+'/===============SCREEN BUFFER======================================
+DECLARE SUB RelPCopy (BYVAL DestSeg%, BYVAL SrcSeg%)
+	Description: Copies the contents of SrcSeg% to DestSeg% 
+	How to Use: RelPcopy VIDEO,Varseg(Vpage(0))
+			*copies the contents of Vpage to the Screen
+	Notes: Solid Copy, Very Fast!!!!
+DECLARE SUB RelPcopyTrans (BYVAL DestSeg%, BYVAL SrcSeg%)
+	Description: Copies the contents of SrcSeg% to DestSeg% skipping color 0
+	How to Use: RelPcopyTrans VIDEO,Varseg(Vpage(0))
+			*copies the contents of Vpage to the Screen
+	Notes: Transparent Copy Used for multiple layered maps and parallax scrolling
+**DECLARE SUB RelPcopyTransB (BYVAL DestSeg%, BYVAL SrcSeg%)
+	Description: Copies the contents of SrcSeg% to DestSeg% skipping color 0 and 
+			Translucently
+	How to Use: RelPcopyTransB VIDEO,Varseg(Vpage(0))
+			*copies the contents of Vpage to the Screen
+	Notes: Transparent Copy with translucency. Used for translucent map layers ie. 
+		Waterfalls,Netlike Structures, some other kewl FX you can think of. ;-)
+**DECLARE SUB RelPcopyBlended (BYVAL DestSeg%, BYVAL SrcSeg%)
+	Description: Copies the contents of SrcSeg% to DestSeg%  Translucently
+	How to Use: RelPcopyBlended VIDEO,Varseg(Vpage(0))
+			*copies the contents of Vpage to the Screen
+	Notes: Solid Copy with translucency. Used for translucent map layers ie. Waterfalls,Netlike 
+		Structures, some other kewl FX you can think of. ;-)
+DECLARE SUB RelPCopySF (BYVAL DestSeg%, BYVAL SrcSeg%)
+	Description: Copies the contents of SrcSeg% to DestSeg%  only if the color of a particular
+	pixel is 0
+	How to Use: RelPcopySF VIDEO,Varseg(Vpage(0))
+			*copies the contents of Vpage to the Screen(puts a Pixel only if the color
+			of the DestSeg is ZERO
+	Notes: SF stands for See Forth .  Useful for collission detection and some other cool fx.
+		Made this with slower computers in mind.  You don't have to make an extra layer
+		for your collide layer.  Using this routine, you could draw your FOREGROUND first
+		using Pcopy, check for COLLISION, then Draw your BACKGROUND Layer 
+		afterwards using RelPcopySF.  That way you  don't need an extra collision layer.
+**DECLARE SUB RelPCopyGamma (BYVAL DestSeg%, BYVAL SrcSeg%, BYVAL _
+					GammaVal%)
+	Description: Copies the contents of SrcSeg% to DestSeg%  transparently. Darkening ot
+			Lightening depending on	GammaVal (Neg(+)=darken, Pos(+)=lighten)
+	How to Use: RelPcopyGamma VIDEO,Varseg(Vpage(0)),5
+			*copies the contents of Vpage to the Screen lightening by 5 gamma
+			displacement
+	Notes: Same as the Effect you see in some RPG games. Darkening when night and
+		lightening when days.  You could save tiles this way(therefore saving memory).
+		More dynamic than Palette rotation since you could use all the colors that
+		you want.
+DECLARE SUB RelCompress (BYVAL DestSeg%, BYVAL DestOff%, BYVAL SrcSeg%)
+	Description: Copies the contents of SrcSeg% to DestSeg%  compressing into half a
+			screen
+	How to Use: RelCompress VIDEO,Varseg(Vpage(0))
+			*copies the contents of Vpage to the Screen compressed in half
+	Notes: *The Idea came from RSVGALIB by CGI JOE.  Just thought to include it here since
+		I found it to be very COOOOL!
+DECLARE SUB RelXCompress (BYVAL DestSeg%, BYVAL DestOff%, BYVAL SrcSeg%,_
+				BYVAL SrcOff%, BYVAL PERCENT%)
+	Description: Copies the contents of SrcSeg% to DestSeg%  compressing the buffer
+			(extended)
+	How to Use: RelXCompress VIDEO,Varseg(Vpage(0))
+			*copies the contents of Vpage to the Screen compressed in percentage
+			basis(1 to 100)
+	Notes: *The Idea came from RSVGALIB by CGI JOE.  Just thought to include it here since
+		I found it to be very COOOOL! Still some polishing needed since its buggy at the
+		moment(Fixed point Math)
+DECLARE SUB RelCLS (BYVAL DestSeg%, BYVAL C%)
+	Description: Clears DestSEG% to color C%
+	How to Use: RelCLS Varseg(Vpage(0)),15
+			*Clears the contents of the buffer(Vpage) to color 15
+	Notes: uhmmmmmmmmm................nothing. :)
+DECLARE SUB RelPageSwap (BYVAL DestSeg%, BYVAL SrcSeg%)
+	Description: Swaps/Exchanges the contents of SrcSeg% to DestSeg%
+	How to Use: RelPageSwap VIDEO,Varseg(Vpage(0))
+			*the contents of the Screen is exchanged with the buffer after the call
+	Notes: can be used for Intro's some other cool stuff like in Metal Slug 3
+DECLARE SUB RelCopyLineH (BYVAL DestSeg%, BYVAL SrcSeg%, BYVAL Ypos%)
+	Description: Copies one horizontal line from SrcSeg to DestSeg in Ypos(Y coordinate)
+	How to Use: RelCopyLineH VIDEO,Varseg(Vpage(0)),10
+			*Copies a line of GFX from the buffer to the Screen in row 10
+	Notes: Lot's of uses(Intros and Endings),Supports Clipping
+DECLARE SUB RelCopyLineV (BYVAL DestSeg%, BYVAL SrcSeg%, BYVAL Xpos%)
+	Description: Copies one Vertical line from SrcSeg to DestSeg in Xpos(X coordinate)
+	How to Use: RelCopyLineX VIDEO,Varseg(Vpage(0)),100
+			*Copies a line of GFX from the buffer to the Screen in column 100
+	Notes: Lot's of uses(Intros and Endings),Supports Clipping
+DECLARE SUB RelCopyBlock (BYVAL DestSeg%, BYVAL SrcSeg%, BYVAL X1%, BYVAL_
+				Y1%, BYVAL X2%, BYVAL Y2%)
+	Description: Copies a block of GFX from SrcSeg to DestSeg starting at coordinate (X1,Y1) -
+			(X2,Y2)
+	How to Use: RelCopyBlock VIDEO,VARSEG(Vpage(0)),10,10,100,100
+	Notes: Used to Restore the background for NON-Scrolling games, this way is faster since
+		you only have to restore the block at the players position.  Clipping is supported
+		and swaps the values if X1>X2 or Y1>Y2.  So you wont crash your computer. :)
+**DECLARE SUB RelGammaBlock (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%, BYVAL_
+				 Y2%, BYVAL GammaVal%)
+	Description: Copies a block of GFX from SrcSeg to DestSeg starting at coordinate (X1,Y1) -
+			(X2,Y2)
+			Darkening or lightening depending on GammaVal(negative
+			value=Darken,Positive Value=Lighten
+	How to Use: RelGammaBlock VIDEO,VARSEG(Vpage(0)),10,10,100,100,-5
+	Notes: Gives the effect that you see in SNES FinalFantasy 3, Caves, Lights, etc.
+DECLARE SUB RelWrapX (BYVAL DESTSEG%, BYVAL SrcSeg%, BYVAL X%)
+	Description: Scrolls the source layer and puts it in the dest layer
+	How to Use: RelWrapX Layer,Layer2,X
+	Notes: Very good for scrolling BG. X is Modded by 320. See ExampleFile Wrap.Bas
+'/==============DRAWING PRIMITIVES=================================
+DECLARE SUB RelPset (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL C%)
+	Description: Puts a pixel on DestSeg at location X,Y color C
+	How to Use: RelPset VIDEO,10,10,15
+	Notes: Same as QB's Pset routine.   Clipping is supported but still very fast(only one shift)!
+DECLARE SUB RelPsetWu (Layer%, x!, y!, clr%)
+	Description: Puts a pixel on DestSeg at location X,Y color C (Anti-Aliiased)
+	How to Use: RelPsetWu VIDEO,10,10,15
+	Notes: Makes pixel movement very natural
+DECLARE SUB RelPsetWu16 (Layer%, x!, y!, clr%)
+	Description: Puts a pixel on DestSeg at location X,Y color C (Anti-Aliiased) supports more colors!!!
+	How to Use: RelPsetWu16 VIDEO,10,10,15
+	Notes: Makes pixel movement very natural
+
+DECLARE SUB RelPsetF (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL C%)
+	Description: Puts a pixel on DestSeg at location X,Y color C
+	How to Use: RelPsetF VIDEO,10,10,15
+	Notes: Same as QB's Pset routine.   Clipping is NOT supported
+		*the fastest PSET routine I had seen is from CGI Joe's Tute. But this one's pretty
+		HOT itself.
+**DECLARE SUB RelPsetTrans (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL C%)
+	Description: Puts a pixel on DestSeg at location X,Y color C, TRANSLUCENTLY
+	How to Use: RelPsetTrans VIDEO,10,10,15
+	Notes: Same as QB's Pset routine only puts the pixel translucently.   Clipping is supported 
+DECLARE SUB RelBoxF (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%, BYVAL_
+				Y2%, BYVAL C%)
+	Description: Draws a FILLED Box at X1,Y1,X2,Y2
+	How to Use: RelBoxF VIDEO,10,10,200,100,25
+	Notes: Supports Clipping, and Swaps the values if X1>X2 or Y1>Y2 so no problem with
+		crashes
+**DECLARE SUB RelBoxTransF (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%,_
+					BYVAL Y2%, BYVAL C%)
+	Description: Draws a FILLED Box at X1,Y1,X2,Y2 TRANSLUCENTLY!
+	How to Use: RelBoxTransF VIDEO,10,10,200,100,50
+	Notes: Supports Clipping, and Swaps the values if X1>X2 or Y1>Y2 so no problem with
+		crashes.  Useful for RPG dialog boxes and color-scaling a region of screen.
+**DECLARE SUB RelBoxTrans (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%,_
+				BYVAL Y2%, BYVAL C%)
+	Description: Draws a Box at X1,Y1,X2,Y2 TRANSLUCENTLY!
+	How to Use: RelBoxTrans VIDEO,10,10,200,100,200
+	Notes: Supports Clipping, and Swaps the values if X1>X2 or Y1>Y2 so no problem with
+			crashes.  Useful for RPG dialog 	boxes and color-scaling a region of
+			screen.
+DECLARE SUB RelBox (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%, BYVAL_
+			Y2%, BYVAL C%)
+	Description: Draws a Box at X1,Y1,X2,Y2 
+	How to Use: RelBoxTrans VIDEO,10,10,200,100,10
+	Notes: Supports Clipping, and Swaps the values if X1>X2 or Y1!>Y2 so no problem with
+		crashes.  
+DECLARE SUB RelLine (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL_
+				X2%,BYVALY2%, BYVAL C%)
+	Description: Draws a Diagonal line line on DestSeg% at X1,Y1,X2,Y2 color C
+	How to Use: RelLine  VIDEO,10,100,300,199,15
+	Notes: Supports Clipping, and swaps values if X1>X2 or Y1>Y2, so no crashes will occur.
+		Uses Bresenham..;-)
+**DECLARE SUB RelLineT (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%,BYVAL_
+				Y2%, BYVAL C%)
+	Description: Draws a Diagonal line line on DestSeg% at X1,Y1,X2,Y2 color C,
+			TRANSLUCENTLY
+	How to Use: RelLineT  VIDEO,10,100,300,199,15
+	Notes: Supports Clipping, and swaps values if X1>X2 or Y1>Y2, so no crashes will occur.
+			Uses Bresenham..;-)
+DECLARE SUB RelLineH (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%, BYVAL_
+				C%)
+	Description: Draws a horizontal line on DestSeg% at X1,Y1,X2 color C
+	How to Use: RelLineH  VIDEO,10,100,300,15
+	Notes: Supports Clipping, and swaps values if X1>X2, so no crashes will occur.
+DECLARE SUB RelLineV (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL Y2%, BYVAL_
+				C%)
+	Description: Draws a Vertical line on DestSeg% at X1,Y1,Y2 color C
+	How to Use: RelLineH  VIDEO,10,10,150,15
+	Notes: Supports Clipping, and swaps values if Y1>Y2, so no crashes will occur.
+**DECLARE SUB RelLineTransV (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL Y2%,_
+					BYVAL C%)
+	Description: Draws a Vertical line on DestSeg% at X1,Y1,Y2 color C  Translucently!
+	How to Use: RelLineH  VIDEO,10,10,150,15
+	Notes: Supports Clipping, and swaps values if Y1>Y2, so no crashes will occur.
+**DECLARE SUB RelLineTransH (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%,_
+					BYVAL C%)
+	Description: Draws a horizontal line on DestSeg% at X1,Y1,Y2 color C TransLucently
+	How to Use: RelLineH  VIDEO,10,10,150,15
+	Notes: Supports Clipping, and swaps values if Y1>Y2, so no crashes will occur.
+
+
+'/===================SPRITE===========================================
+DECLARE SUB RelSprite (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%, BYVAL_
+			SPRITEOFFSET%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Skips color 0
+			Compatible with QB's Get routine :)
+	How to Use: RelSprite VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray(Offset))  
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Try and test this againts the lib your using to see which is faster.  This one is
+		extremely fast! Used for games. :) 
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteSolid (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%, BYVAL_
+				SPRITEOFFSET%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Solidly
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteSolid VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray
+			(Offset))  
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 
+	Notes: Try and test this againts the lib your using to see which is faster.  This one is
+		extremely fast! Used for games. :) Also try to see the ASM source(Asm guys) for
+		moving Dwords even on ODD width Sprites without using a JUMP. :) I
+		don't know if someone already knew the algorithm I used with this(Xloop) but it will
+		be nice to know. 
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteFast (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%, BYVAL_
+			SPRITEOFFSET%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  SOLIDLY
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteFast VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray_
+			(Offset))  
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 10,10 skipping color 0
+	Notes: NO Support for Clipping!!! So beware!!!! Probably useless since there is little
+		difference speedwise with RelSpriteSolid.
+**DECLARE SUB RelSpriteTrans (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%,_
+				BYVAL SPRITEOFFSET%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Skips color 0 and draws it
+			TRANSLUCENTLY!!!
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteTrans VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray
+			(Offset))  
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Cool for See-Thru sprite FX, Ghosts, translucent map Layers,Lasers...ETC. Still
+			very Fast(Used in Space Impact)
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteSF (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%, BYVAL_
+			SPRITEOFFSET%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y. Only Draws the Pixel id the
+			color at DESTSEG is ZERO.
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteSF VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray
+			(Offset))  
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Used for Memory Deficient computers and RPG's ie. entering houses.  Also for
+			BACKWARD rendering.  See RelPcopySF for more details.
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteColor (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%, BYVAL_
+				SPRITEOFFSET%, BYVAL C%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Skips color 0 and draws the
+			sprite in one single color(C) ie Outline of Sprite. Compatible with QB's Get
+			routine :)
+	How to Use: RelSpriteColor VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray
+			(Offset)),31
+			*Draws the Sprite at 10,10 using color 31
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Used for collision detection and used to "FLASH" the sprite when hit.
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteColorX (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%,_
+				BYVAL SPRITEOFFSET%, BYVAL C%, BYVAL STARTC%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Skips color 0 and draws the
+			sprite in one single color(C) ie Outline of Sprite.  Will only draw the PIXEL
+			if the pixel in the Sprite is >=StartC%, more dynamic than RelSpriteColor.
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteColorX VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray
+			(Offset)),31,128
+			*Draws the Sprite at 10,10 using color 31 only if the SpriteColor >=color
+			128
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Used for collision detection and used to "FLASH" the sprite when hit. Also to make
+		collision detection more dynamic.  That way you could divide your colors into 2
+		sections(0 to 127=no collide and 128-255=collide) then draw them appropriately in
+		you collision layer.
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteSolidX (BYVAL DestSeg%, BYVAL SrcSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%,_
+				BYVAL Y2%, BYVAL NewX%, BYVAL NewY%)
+	Description: Draws a block of image from SrcSeg at X1,Y1,X2,Y2 to DestSeg at
+			NewX,NewY
+			Same as:
+			Get(X1,Y1)-(X2,Y2),Array
+			Put(NewX,NewY), Array
+			*But doesn't use array to hold the data.
+	How to Use: RelSpriteSolidX VIDEO,VARSEG(Vpage(0)),10,10,45,45,100,100
+			*Gets a block of image at Vpage on coordinates X1,Y1,X2,Y2 and puts it
+			onScreen at corrdinates 100,100
+	Notes: Useful for SCROLLING, restoring the background on scrolling games, anything that
+		moves. :)
+		*Swaps the coordinates if X1>X2 or Y1>Y2.  So less crashes.  NO Clipping is
+		supported with NEWX and NEWY so use with caution.
+**DECLARE SUB RelSpriteGamma (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%,_
+				BYVAL SPRITEOFFSET%, BYVAL GammaVal%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Skips color 0 and draws the
+			sprite depending on the value of	GammaVal (Neg(-)=Darken,Pos(+)
+			=Lighten)
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteGamma VIDEO,10,10,VARSEG(SpriteArray(0)),VARPTR(SpriteArray
+			(Offset)),6
+			*Draws the Sprite at 10,10 lightening its colors by 6 gamma displacement
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Used for Shadows and ghosts. Anything you want! :)
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteRotate (BYVAL DESTSEG%, BYVAL X%, BYVAL Y%, BYVAL ANGLE%, BYVAL_
+				SPRSEG%, BYVAL SPROFF%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Skips color 0 and Rotates it
+			according to the ANGLE
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteRotate VIDEO,10,10,100,VARSEG(SpriteArray(0)),VARPTR
+			(SpriteArray(Offset)),6
+			*Draws the Sprite at 10,10 rotating it 100 degrees
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Used to make a sprite Rotate to simplify things.  Angle must be in the range of 0-
+			359
+		*SUPPORTS CLIPPING!!!!!
+**DECLARE SUB RelSpriteRotateTrans (BYVAL DESTSEG%, BYVAL X%, BYVAL Y%, BYVAL ANGLE%, BYVAL_
+					SPRSEG%, BYVAL SPROFF%)
+	Description: Draws a Sprite on Destseg at coordinate X,Y.  Skips color 0 and Rotates it
+			according to the ANGLE 
+			Tranlucently!!! Compatible with QB's Get routine :)
+	How to Use: RelSpriteRotateTrans VIDEO,10,10,100,VARSEG(SpriteArray(0)),VARPTR
+			(SpriteArray(Offset)),6
+			*Draws the Sprite at 10,10 rotating it 100 degrees,bending the BG with the
+			SPR
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Used to make a sprite Rotate to simplify things.  Angle must be in the range of 0-
+			359
+		*SUPPORTS CLIPPING!!!!!
+
+DECLARE SUB RelSpriteFlip (BYVAL DESTSEG%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%,_
+ 				BYVAL SPRITEOFFSET%, BYVAL FlipMode%)
+	Description: Puts a sprite in but inverted Vertically, Horizontally or both depending
+			on the value of Flipmode. 
+	How to Use: Same as RelSprite
+	Notes: useful for memory management. very fast!!! As fast as RelSprite.
+	FlipMode:
+		0 =No Flip
+		1 =Flip Horizontally
+		2.=Flip Vertically
+		3 =Flip both horizontally and vertically
+		*You could also use the constants: FLIPH, FLIPV, FLIPVH
+		Supports Clipping!!!!
+DECLARE SUB RelSpriteFlipG (BYVAL DESTSEG%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%, 
+			BYVAL SPRITEOFFSET%, BYVAL FlipMode%, BYVAL GammaVal%)
+	Description: Puts a sprite in but inverted Vertically, Horizontally or both depending
+			on the value of Flipmode. In GammaMode!!!
+	How to Use: Same as RelSpriteGamma
+	Notes: useful for memory management. very fast!!! As fast as RelSpriteGamma
+	FlipMode:
+		0 =No Flip
+		1 =Flip Horizontally
+		2.=Flip Vertically
+		3 =Flip both horizontally and vertically
+		*You could also use the constants: FLIPH, FLIPV, FLIPVH
+		Supports Clipping!!!!
+DECLARE SUB RelSpriteFlipC (BYVAL DESTSEG%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%,
+			 BYVAL SPRITEOFFSET%, BYVAL FlipMode%, BYVAL Clr%)
+	Description: Puts a sprite in but inverted Vertically, Horizontally or both depending
+			on the value of Flipmode. In just one color!!!
+	How to Use: Same as RelSpriteColor
+	Notes: useful for memory management. very fast!!! As fast as RelSpriteColor.
+	FlipMode:
+		0 =No Flip
+		1 =Flip Horizontally
+		2.=Flip Vertically
+		3 =Flip both horizontally and vertically
+		*You could also use the constants: FLIPH, FLIPV, FLIPVH
+		Supports Clipping!!!!
+DECLARE SUB RelGet (BYVAL DestSeg%, BYVAL X1%, BYVAL Y1%, BYVAL X2%, BYVAL Y2%, 
+			BYVAL SPRSEG%, BYVAL SPROFF%)
+	Description: Gets the Image at DestSeg% at coords X1,Y1,X2,Y2 and Stores the data at
+			SprOff.
+			*Compatible with QB's PUT routine
+			*Works like QB's GET routine
+			*Use in conjuction with RelSize
+	How to Use: 	RelSize(10,10,20,20)
+			Dim Array(RelSize,1 to 2)     'two elements for ease
+			'Draw crap at VPAGE
+			RelGet VARSEG(Vpage(0)),10,10,20,20,Varseg(Array(0,1)),Varptr(Array
+			(0,1))   'First Image
+			RelGet VARSEG(Vpage(0)),10,10,20,20,Varseg(Array(0,1)),Varptr(Array
+			(0,2))   'Second Image
+			or....
+			RelSize(10,10,20,20)
+			Dim Array(RelSize*2)     'two images
+			'Draw crap at VPAGE
+			RelGet VARSEG(Vpage(0)),10,10,20,20,Varseg(Array(0)),Varptr(Array(0))
+			'First Image
+			RelGet VARSEG(Vpage(0)),10,10,20,20,Varseg(Array(0)),Varptr(Array
+			(RelSize))   'Second Image
+			*use what suits you or for a better index... use PP256 since it's indexed
+			automatically :-)
+	Notes: Useful for games............Supports Clipping
+
+'/================COLLISION DETECTION=================================
+DECLARE FUNCTION RelCollide% (BYVAL DestSeg%, BYVAL X%, BYVAL Y%, BYVAL SPRITESEGMENT%,_
+				BYVAL SPRITEOFFSET%)
+	Description: Unlike most Collision detection, This returns the COLOR of the pixel the sprite
+			collided with instead of -1. 
+			*Returns color of pixel collided with, zero(FALSE) if otherwise, The check
+			is done at DestSeg.
+	How to Use: RelCollide VARSEG(Vpage(0)),10,10,VARSEG(SprArray(0)),VARPTR
+			(SprArray(Offset))
+			*Returns the color of the pixel the sprite Collided with(Pixel*Pixel) 0 if not
+			*Offset is the sprite's offset/frame
+			*Used in conjuction with RelCollideSprB to achieve pixel*pixel sprite
+			collision detection
+	Notes: Returning the Color instead of -1(TRUE) is more dynamic and flexible in the sense
+			that you don't have to use another layer to detect collision.  Example:
+			C=Relcollide Varseg...............
+			if C>127 then Collision=TRUE else Collision=FALSE			
+		*Supports Clipping
+DECLARE FUNCTION RelCollideSprB% (BYVAL SPR1X%, BYVAL SPR1Y%, BYVAL SPR1SEGMENT%, BYVAL_
+					SPR1OFFSET%, BYVAL SPR2X%, BYVAL SPR2Y%, BYVAL_
+					SPR2SEGMENT%, BYVAL SPR2OFFSET%)
+	Description: Returns -1(TRUE) if Spr1 collided with SPR2 using a bounding box check
+	How to Use: RelCollideSprB Spr1X,Spr1Y,VARSEG(Spr1(0)),VARPTR(Spr1
+				(Offset)),Spr2X,Spr2Y,VARSEG(Spr2(0)),VARPTR(Spr2(Offset))
+			*Offset is the sprite's offset/frame
+			*Used in conjuction with RelCollide to achieve pixel*pixel sprite collision
+				detection
+			*This does not actually draw the sprites. It checks collision arithmitically.
+	Notes: Very FAST.  See the source..... :) and the example Files for more details.... :-)
+DECLARE FUNCTION RelCollideSpr% (BYVAL SPR1X%, BYVAL SPR1Y%, BYVAL SPR1SEGMENT%, BYVAL_
+					SPR1OFFSET%, BYVAL SPR2X%, BYVAL SPR2Y%, BYVAL_
+					SPR2SEGMENT%, BYVAL SPR2OFFSET%)
+	Description: Returns the color of in the SPR2  if Spr1 collided with SPR2 using a PIXEL 
+			PERFECT collision method
+	How to Use: RelCollideSpr Spr1X,Spr1Y,VARSEG(Spr1(0)),VARPTR(Spr1(Offset)),Spr2X,Spr2Y,VARSEG
+			(Spr2(0)),VARPTR(Spr2(Offset))
+			*Offset is the sprite's offset/frame
+			*Pixel perfect so you don't have to use a collision layer
+			*This does not actually draw the sprites. It checks collision arithmitically.
+			*This combines RelCollide and RelCollideSprB in one but does it faster!!!!! 
+	Notes: Very FAST.  See the source..... :) and the example Files for more details.... :-)
+
+
+'/================KEYBOARD============================================
+*I found this routines at CGI Joe's tutorial.  I have made my own routines using Petter Holmbergs tut but mine's a little buggy so I used the routines I found at CGI's tut.  This are not my routines, This is CGI's.
+DECLARE SUB RelKeyBoardON ()
+	Description: Turns the Keyboard handler on.
+	How to Use: RelKeyBoardON
+	Notes: You will not be able to use QB's intrinsic keyboard routines(INKEY$,INPUT$,etc) after you issue this command.
+DECLARE SUB RelKeyBoardOFF ()
+	Description: Turns the Keyboard handler off.
+	How to Use: RelKeyBoardOFF
+	Notes: Use this to turn the KeyBoard handler off. Always issue this before ending your program or you will not regain control 		of the keyboard.
+DECLARE FUNCTION RelKey% (BYVAL Scancode%)
+	Description: Returns -1(TRUE) if a particular key is pressed.
+	How to Use: if RelKey(KEYENTER) then    'Check to see if user pressed Enter
+			DOSOMETHING
+		      else
+			DONOTHING
+		      end if
+	Notes: *Scancode is the Code which can be found at QB's online help.  See RelLib.BI for KEY constants
+
+
+'/================FONT================================================
+DECLARE SUB RelPrint (DestSeg%, X%, Y%, Font$, Mincolor%, Italic%)
+	Description: Prints an 8*8 font using the ROM address FFA6h,italic ot otherwise,Starting
+			from color mincolor to Mincolor+8
+			*Font$=String to Print
+			*MinColor=Starting Color to plot
+			*if TRUE,prints in italic,Else normal
+	How to Use: RelPrint VIDEO,10,10,"RelSOFT",23,TRUE
+			*Prints "RelSOFT" on the Screen at 10,10,Starting from color 23 to color
+				30, in ITALIC
+	Notes: Supports Clipping!!!
+DECLARE SUB RelPrintS (DestSeg%, X%, Y%, Font$, Mincolor%, Xscale%, Yscale%, Italic%)
+	Description: Prints a SCALED font using the ROM address FFA6h,italic or
+			otherwise,Starting from color mincolor to 	Mincolor+8
+			*Font$=String to Print
+			*MinColor=Starting Color to plot
+			*If TRUE,prints in italic,Else normal
+			*Xscale=Horizontal Scale(minimun is 1)
+			*Yscale=Vertical Scale(minimum is 1)
+	How to Use: RelPrintS VIDEO,10,10,"RelSOFT",23,2,3,FALSE
+			*Prints "RelSOFT" on the Screen at 10,10,Starting from color 23 to color
+			30, in ITALIC,with 2x the Xsize and 3 times the Ysize.
+	Notes: Supports Clipping!!!
+**DECLARE SUB RelPrintTransS (DestSeg%, X%, Y%, Font$, Mincolor%, Xscale%, Yscale%,_
+					Italic%)
+	Description: Prints a SCALED font using the ROM address FFA6h,italic or
+			otherwise,Starting from color mincolor to Mincolor+8,
+			TRANSLUCENTLY!!!!!
+			*Font$=String to Print
+			*MinColor=Starting Color to plot
+			*If TRUE,prints in italic,Else normal
+			*Xscale=Horizontal Scale(minimun is 1)
+			*Yscale=Vertical Scale(minimum is 1)
+	How to Use: RelPrintTransS VIDEO,10,10,"RelSOFT",23,2,3,FALSE
+			*Prints "RelSOFT" on the Screen at 10,10,Starting from color 23 to color
+			30, in ITALIC,with 2x the Xsize and 3 times the Ysize.
+			TRANSLUCENTLY!!!
+	Notes: Supports Clipping!!!
+
+DECLARE SUB RelFont256 (DestSeg%, X%, Y%, Text$, Centered%, FontArray%(),_
+				FontArrayIndex%())
+	Description: Prints font using any Charset made with PP256!!!! With Variable Spacing!!!
+			*Text$=String to Print
+			*Centered= Auto Centers the string if TRUE
+			*FontArray()= FontSet made with PP256
+			*FontArrayIndex()=Index made with MakeImageIndex
+	How to Use: RelFont256 VIDEO,10,10,"RelSOFT",FALSE,Font(),FontIndex()
+			*Prints "RelSOFT" on the Screen at 10,10,with autocentering off
+	Notes: Supports Clipping!!! Must Issue InitImageData before you use this(see example
+			files for more details)
+**DECLARE SUB RelFontTrans256 (DestSeg%, X%, Y%, Text$, Centered%, FontArray%(),_
+					FontArrayIndex%())
+	Same as RelFont256 but prints the fonts TRANSLUCENTLY!!!!
+DECLARE SUB RelFontFixed256 (DestSeg%, X%, Y%, Text$, Centered%, FontArray%(),_
+					FontArrayIndex%())
+	Description: Prints font using any Charset made with PP256!!!! With Fixed Spacing.
+			*Text$=String to Print
+			*Centered= Auto Centers the string if TRUE
+			*FontArray()= FontSet made with PP256
+			*FontArrayIndex()=Index made with MakeImageIndex
+	How to Use: RelFontFixed256 VIDEO,10,10,"RelSOFT",FALSE,Font(),FontIndex()
+			*Prints "RelSOFT" on the Screen at 10,10,with autocentering off
+	Notes: Supports Clipping!!! Must Issue InitImageData before you use this(see example
+			files for more details)
+**DECLARE SUB RelFontFixedT256 (DestSeg%, X%, Y%, Text$, Centered%, FontArray%(),_
+						FontArrayIndex%())
+	Same as RelFontFixed256 but prints the fonts TRANSLUCENTLY!!!!
+DECLARE SUB RelScore256 (DestSeg%, X%, Y%, Score&, Centered%, FontArray%(),_
+				FontArrayIndex%())
+	Description: Prints the Score& using any Charset made with PP256!!!! With Fixed Spacing.
+			*Score&=LongINT value to print
+			*Centered= Auto Centers the string if TRUE
+			*FontArray()= FontSet made with PP256
+			*FontArrayIndex()=Index made with MakeImageIndex
+	How to Use: RelScore256 VIDEO,10,10,1000000,FALSE,Font(),FontIndex()
+			*Prints "1,000,000" on the Screen at 10,10,with autocentering off
+			*Note that a Comma(,) is inserted every 3 chars from the right.
+	Notes: Supports Clipping!!! Must Issue InitImageData before you use this(see example
+			files for more details)
+**DECLARE SUB RelScoreTrans256 (DestSeg%, X%, Y%, Score&, Centered%, FontArray%(),_
+					FontArrayIndex%())
+	Same as RelScore256 but prints the fonts TRANSLUCENTLY!!!!
+
+
+'/============MEMORY==============================================
+DECLARE SUB RelMemCopy (BYVAL DestSeg%, BYVAL DestOff%, BYVAL SrcSeg%, BYVAL SrcOff%, BYVAL NumBytes%)
+	Description: Copies numbytes from SRC to DEST
+	How to Use: RelMemCopy VIDEO,200,VARSEG(VPAGE(0)),VARPTR(Vpage(500)),12000
+			*Copies the contents of Vpage at offset 500, to the Screen at offset
+			200,copying 12000 bytes
+	Notes: Numbytes should not Exceed 32767.  I don't know how to fix this as of the moment
+		but I think it has something to do with QB defaulting to SIGNED integers.  So if
+		any of you knows how to fix this, pls email me, and you will get credit.
+		:) .  Could be used as a replacement for PCOPY or Reusing of Array's of the same
+		size. Probably useless.  Got the 	Idea from PASCAL.
+DECLARE SUB RelAddHi (BYVAL SEGINTVAL%, BYVAL OFFINTVAL%, BYVAL BYTEVAL%)
+	Description: Puts a value(0 to 255) to the UPPER byte of Intval, emulates bytes in QB to
+			save memory
+	How to Use:RelAddHi Varseg(A%),Varptr(A%),230
+			*Writes the value 230 to the upper byte of A%
+	Notes: Use VARSEG and VARPTR combination to get the pointer of the Integer Value.
+		Values for Byte val are UNSIGNED meaning  they range from 0 to 255 and you
+		can't put negative values.  Useful for Maps/Tilesets/TileIndexes as you
+		wont need more than 255 to make some good tilesets.See ByteSamp.Bas for
+		more details.
+DECLARE SUB RelAddLow (BYVAL SEGINTVAL%, BYVAL OFFINTVAL%, BYVAL BYTEVAL%)
+	Description: Puts a value(0 to 255) to the LOWER byte of Intval, emulates bytes in QB to
+			save memory
+	How to Use:RelAddLow Varseg(A%),Varptr(A%),230
+			*Writes the value 230 to the lower byte of A%
+	Notes: Use VARSEG and VARPTR combination to get the pointer of the Integer Value.
+		Values for Byte val are UNSIGNED meaning  they range from 0 to 255 and you
+		can't put negative values.  Useful for Maps/Tilesets/TileIndexes as you
+		wont need more than 255 to make some good tilesets. See ByteSamp.Bas for
+		more details.
+DECLARE FUNCTION RelGetHi (BYVAL Intval%)
+	Description: Returns value(0 to 255) read from the UPPER byte of Intval
+	How to Use:	Dim A as Integer
+			RelAddHi Varseg(A),Varptr(A),156
+			HiByte=RelGetHi(A)
+			*Returns 156(HighByte)
+	Notes: Used in conjuction with RelAddHi/RelAddLow to emulate BYTES in QB. Values
+		returned are UNSIGNED meaning  they range from 0 to 255 .  Useful for
+		Maps/Tilesets/TileIndexes as you wont need more than 255 to make
+		some good tilesets. Saves a lot of memory.
+DECLARE FUNCTION RelGetLow (BYVAL Intval%)
+	Description: Returns value(0 to 255) read from the LOWER byte of Intval
+	How to Use:	Dim A as Integer
+			RelAddLow Varseg(A),Varptr(A),124
+			LowByte=RelGetLow(A)
+			*Returns 124(LowByte)
+	Notes: Used in conjuction with RelAddHi/RelAddLow to emulate BYTES in QB. Values
+		returned are UNSIGNED meaning  they range from 0 to 255 .  Useful for
+		Maps/Tilesets/TileIndexes as you wont need more than 255 to make
+		some good tilesets. Saves a lot of memory.
+'/==============XMS SUBS/FUNCTIONS==================================
+DECLARE FUNCTION RelXmsInit% ()
+	Description: Checks if an XMS driver present and initializes it if found.
+	Returns: -1 if found 0 if otherwise
+	How to Use: Foo%=RelXMSinit
+			*Foo% would return -1 if found
+	Notes: ALWAYS call this BEFORE any XMS routines as this gets the Handle of the Driver.
+DECLARE FUNCTION RelXmsGetFree& ()
+	Description: Queries any free extended memory
+	Returns: A long integer of the largest free XMS memory in KB
+	How to Use: Foo&=RelXMSGetFree			
+	Notes: Duh?!
+DECLARE FUNCTION RelXmsGetTotal& ()
+	Description: Queries the total extended memory
+	Returns: A long integer of the total XMS memory in KB
+	How to Use: Foo&=RelXMSGetTotal
+	Notes: Duh?!
+DECLARE FUNCTION RelXmsAllocate% (BYVAL AmountKbs&)
+	Description: Allocates the XMS block for use.
+	Parameters:
+		AmountKBs& - Long integer in KBs of XMS mem to allocate
+	Returns: the XMS handle(address) fo the XMS block
+	How to Use: Handle%=RelXMSAllocate%(64)
+			*Allocates 64 Kb of XMS mem.
+	Notes: No Super XMS so is limited to 64 MB addressable XMS space. :*( Sorry as they say XP would complain.
+DECLARE SUB RelXmsDeallocate (BYVAL XmsHandle%)
+	Description: Deallocates/Frees the XMS block .
+	Parameters:
+		AmountKBs& - Long integer in KBs of XMS mem to Deallocate
+	Returns: the XMS handle(address) fo the XMS block
+	How to Use: 	Handle%=RelXMSAllocate%(64)
+			RelXMSDeallocate%(Handle%)
+			*Deallocates 64 Kb of XMS mem.
+	Notes: No Super XMS so is limited to 64 MB addressable XMS space. :*( Sorry as they
+		say XP would complain.
+DECLARE SUB RelXMSFromBase (BYVAL BaseSeg%, BYVAL BaseOFF&, BYVAL XmsHandle%, BYVAL XMSOffset&, BYVAL Length&)
+	Description: Copies a block of DATA from Base/Conventional mem to XMS
+	Parameters:
+			BaseSEG%=Base SEGment(Varseg) Short Int
+        			BaseOFF&=Baser OFFset(Varptr) Long Int as QB wraps things
+        			XmsHandle&=Handle returned by RelXMSAllocate (Short Int)
+        			XmsOffSet&=32 bit Offset in XMS data (Long Int)
+        			Length&=32 bit Length(IN BYTES) of data to copy(Long Int)
+	How to Use: 	XMSHandle% = RelXmsAllocate(512)
+			RelXMSFromBase Varseg(Sprite(0)), 0, XMSHandle%, 0, 64000
+			*Copies 64000 KB of DATA from the array Sprite() to the first XMS block.
+	Notes: No Super XMS so is limited to 64 MB addressable XMS space. :*( Sorry as they
+		say XP would complain
+DECLARE SUB RelXMStoBase (BYVAL BaseSeg%, BYVAL BaseOFF&, BYVAL XmsHandle%, BYVAL XMSOffset&, BYVAL Length&)
+	Description: Copies a block of DATA from XMS to Base/Conventional mem 
+	Parameters:
+			BaseSEG%=Base SEGment(Varseg) Short Int
+        			BaseOFF&=Baser OFFset(Varptr) Long Int as QB wraps things
+        			XmsHandle&=Handle returned by RelXMSAllocate (Short Int)
+        			XmsOffSet&=32 bit Offset in XMS data (Long Int)
+        			Length&=32 bit Length(IN BYTES) of data to copy(Long Int)
+	How to Use: 	XMSHandle% = RelXmsAllocate(512)
+			RelXMSToBase Varseg(Sprite(0)), 0, XMSHandle%, 0, 64000
+			*Copies 64000 KB of DATA from XMS to the array Sprite().
+	Notes: No Super XMS so is limited to 64 MB addressable XMS space. :*( Sorry as they
+			say XP would complain
+DECLARE SUB RelXMSPut (BYVAL Layer%, BYVAL x%, BYVAL y%, BYVAL SprSeg%, BYVAL SprOff%, BYVAL Flipmode%, _
+BYVAL DummySeg%, BYVAL xmsHandle%)
+	Description: An XMS based Sprite routine! Copies a sprite to a Layer using data stored in XMS, Thereby freeing up a
+			Lot of base memory. Transparent Put
+	Parameters:
+			Layer% = The double buffer
+			X% = X location of sprite
+X% = Y location of sprite
+SprSeg% = The segment of the XMSTile index
+SprOff% = The offset of the XMSTile index
+        			XmsHandle%=Handle returned by RelXMSAllocate (Short Int)
+        			Flipmode% = The flipping values of the sprite(Same as RelSpriteFlip)
+			DummySeg% = The segment of the intermediate base array that is used to speed things up.
+			*Dummy() would contain the actual sprite data(PUT compatible) after the call so you can use it to 
+				make a pixel perfect collision.
+	How to Use: 	
+		RelXMSPut  Layer%,  x%,  y%, Varseg(XmsTileInded(1), VarPtr(XmsTileInded(500), 2, Varseg(Dummy(0)), xmsHandle%
+		*Puts the 500th sprite transparently on the layer  flipping it horizontally.
+
+	Notes: Very fast and easy to use!!!(See the Appendix at the end of this doc for a lil tute)
+
+DECLARE SUB RelXMSPutT (BYVAL Layer%, BYVAL x%, BYVAL y%, BYVAL SprSeg%, BYVAL SprOff%, BYVAL Flipmode%, _
+BYVAL DummySeg%, BYVAL xmsHandle%)
+	Description: An XMS based Sprite routine! Copies a sprite to a Layer using data stored in XMS, Thereby freeing up a
+			Lot of base memory. Translucent Put
+	Parameters:
+			Layer% = The double buffer
+			X% = X location of sprite
+X% = Y location of sprite
+SprSeg% = The segment of the XMSTile index
+SprOff% = The offset of the XMSTile index
+        			XmsHandle%=Handle returned by RelXMSAllocate (Short Int)
+        			Flipmode% = The flipping values of the sprite(Same as RelSpriteFlipT)
+			DummySeg% = The segment of the intermediate base array that is used to speed things up.
+			*Dummy() would contain the actual sprite data(PUT compatible) after the call so you can use it to 
+				make a pixel perfect collision.
+	How to Use: 	
+		RelXMSPut T Layer%,  x%,  y%, Varseg(XmsTileInded(1), VarPtr(XmsTileInded(500), 2, Varseg(Dummy(0)), xmsHandle%
+		*Puts the 500th sprite translucently on the layer  flipping it horizontally.
+
+	Notes: Very fast and easy to use!!!(See the Appendix at the end of this doc for a lil tute)
+
+DECLARE SUB RelXMSPutC (BYVAL Layer%, BYVAL x%, BYVAL y%, BYVAL SprSeg%, BYVAL SprOff%, BYVAL Flipmode%,_
+ BYVAL Clr%, BYVAL DummySeg%, BYVAL xmsHandle%)
+	Description: An XMS based Sprite routine! Copies a sprite to a Layer using data stored in XMS, Thereby freeing up a
+			Lot of base memory. Colored Put
+	Parameters:
+			Layer% = The double buffer
+			X% = X location of sprite
+X% = Y location of sprite
+SprSeg% = The segment of the XMSTile index
+SprOff% = The offset of the XMSTile index
+        			XmsHandle%=Handle returned by RelXMSAllocate (Short Int)
+        			Flipmode% = The flipping values of the sprite(Same as RelSpriteFlipC)
+			Clr% = The  color outline of the sprite
+			DummySeg% = The segment of the intermediate base array that is used to speed things up.
+			*Dummy() would contain the actual sprite data(PUT compatible) after the call so you can use it to 
+				make a pixel perfect collision.
+
+	How to Use: 	
+	       RelXMSPutC Layer%,  x%,  y%, Varseg(XmsTileInded(1), VarPtr(XmsTileInded(500), 2,15, Varseg(Dummy(0)), xmsHandle%
+		*Puts the 500th sprite using color 15 on the layer  flipping it horizontally.
+
+	Notes: Very fast and easy to use!!!(See the Appendix at the end of this doc for a lil tute)
+
+DECLARE SUB RelXMSPutG (BYVAL Layer%, BYVAL x%, BYVAL y%, BYVAL SprSeg%, BYVAL SprOff%, BYVAL Flipmode%,_
+ BYVAL Gamma%, BYVAL DummySeg%, BYVAL xmsHandle%)
+	Description: An XMS based Sprite routine! Copies a sprite to a Layer using data stored in XMS, Thereby freeing up a
+			Lot of base memory. Gamma Put
+	Parameters:
+			Layer% = The double buffer
+			X% = X location of sprite
+X% = Y location of sprite
+SprSeg% = The segment of the XMSTile index
+SprOff% = The offset of the XMSTile index
+        			XmsHandle%=Handle returned by RelXMSAllocate (Short Int)
+        			Flipmode% = The flipping values of the sprite(Same as RelSpriteFlipG)
+			Gammar% = The Gamma displacement of the sprite
+			DummySeg% = The segment of the intermediate base array that is used to speed things up.
+			*Dummy() would contain the actual sprite data(PUT compatible) after the call so you can use it to 
+				make a pixel perfect collision.
+
+	How to Use: 	
+	     RelXMSPutG  Layer%,  x%,  y%, Varseg(XmsTileInded(1), VarPtr(XmsTileInded(500), 2,-6, Varseg(Dummy(0)), xmsHandle%
+		*Puts the 500th sprite using darkening if by a factor of 6on the layer  flipping it horizontally.
+
+	Notes: Very fast and easy to use!!!(See the Appendix at the end of this doc for a lil tute)
+
+DECLARE SUB RelXMSPutS (BYVAL Layer%, BYVAL x%, BYVAL y%, BYVAL SprSeg%, BYVAL SprOff%, BYVAL DummySeg%, _
+BYVAL xmsHandle%)
+	Description: An XMS based Sprite routine! Copies a sprite to a Layer using data stored in XMS, Thereby freeing up a
+			Lot of base memory. Solid Put
+	Parameters:
+			Layer% = The double buffer
+			X% = X location of sprite
+X% = Y location of sprite
+SprSeg% = The segment of the XMSTile index
+SprOff% = The offset of the XMSTile index
+        			XmsHandle%=Handle returned by RelXMSAllocate (Short Int)
+        			How to Use: 	
+		RelXMSPut  Layer%,  x%,  y%, Varseg(XmsTileInded(1), VarPtr(XmsTileInded(500), Varseg(Dummy(0)), xmsHandle%
+		*Puts the 500th sprite solidly on the layer . 
+
+	Notes: Very fast and easy to use!!!(See the Appendix at the end of this doc for a lil tute)
+
+DECLARE SUB RelTile2Xms (Filename$, Tile() AS ANY, xmsHandle%, XmsStartOFF&, XmsEndOFF&)
+	Description: 	Loads the Tileset stored in disk directly to XMS, Compressing it by 99.99%!
+	Parameters: 	
+			FileName$ = The name of the file
+			Tile() = The XMS Array index for use by RelXMSPUT ans its variants
+        			XmsHandle%=Handle returned by RelXMSAllocate (Short Int)
+        			XmsStartOff& = A long integer that references the offset of the tiles in XMS
+XmsEndOff& = A long integer that returns the last offset of the XMS data
+* XmsEndOff& after each call can be used as a startOffset on the next call by
+RelAddXMSTileIndex.
+
+	How to Use: 	
+Path$ = "C:\Qbasic\pp256\Images\"
+Layer = VARSEG(Vpage(0))
+File$ = Path$ + "Crytlstg.Put"
+xmsHandle% = RelXmsAllocate(512)
+XmsEndOFF&=0
+RelTile2Xms File$, XmsTileIndex(), xmsHandle%, XmsEndOFF&, XmsEndOFF&
+RelXMSPut VIDEO, X, y, VARSEG(XmsTileIndex(1)), VARPTR(XmsTileIndex(Idx)), 0, _
+VARSEG(Tdum(0)), xmsHandle%
+* Stores the CryltStg.Put file directly to XMS and uses RElXMSPut afterwards.
+	Notes: (See the Appendix at the end of this doc for a lil tute)
+
+DECLARE SUB RelAddXMSTileIndex (DestTile() AS ANY, SourceTile() AS ANY)
+	Description: 	Adds a Tileset from base to a tileset in XMS.  This way you can have as many tiles as you want on XMS.
+	Parameters: 	
+			DestTile = The Tileset in XMS
+			SourceTile() = The Tileset in base memory
+
+	How to Use: 	
+Path$ = "C:\Qbasic\pp256\Images\"
+Layer = VARSEG(Vpage(0))
+File$ = Path$ + "Crytlstg.Put"
+xmsHandle% = RelXmsAllocate(512)
+XmsEndOFF&=0
+RelTile2Xms File$, XmsTileIndex(), xmsHandle%, XmsEndOFF&, XmsEndOFF&
+File$ = Path$ + "Sultan.Put"
+RelTile2Xms File$, XmsTempIndex(), xmsHandle%, XmsEndOFF&, XmsEndOFF&
+RelAddXMSTileIndex XmsTileIndex(), XmsTempIndex()
+RelXMSPut VIDEO, X, y, VARSEG(XmsTileIndex(1)), VARPTR(XmsTileIndex(Idx)), 0, _
+VARSEG(Tdum(0)), xmsHandle%
+* Stores the CryltStg.Put file directly to XMS and uses RElXMSPut afterwards. Also adds
+Sultan.Put in the XMS data.
+	Notes: (See the Appendix at the end of this doc for a lil tute)
+
+DECLARE SUB RelFontXms (DestSeg%, x%, y%, Text$, Centered%, XmsFont() AS ANY, Flipmode%, xmsHandle%)
+	Description: Prints font using any Charset stored in XMS
+			Text$=String to Print
+			Centered= Auto Centers the string if TRUE
+XmsFont()= FontSet in XMS
+FlipMode = If you want to have flip fx.
+XmsHandle%=Handle returned by RelXMSAllocate (Short Int)
+
+	How to Use: RelFontXMS VIDEO,10,10,"RelSOFT",FALSE,Font(), 0, xmshandle%
+			*Prints "RelSOFT" on the Screen at 10,10,with autocentering off
+	Notes: Supports Clipping!!! 
+'/==============MOUSE===============================================
+DECLARE SUB RelMouseShow ()
+	Description: Shows the mouse
+	How to Use: RelMouseShow
+	Notes: ;)
+DECLARE SUB RelMouseHide ()
+	Description: Hides the mouse
+	How to Use: RelMouseHide
+	Notes: ;)
+DECLARE SUB RelMouseReset ()
+	Description: Resets the Mouse Coordinates to center of screen and disables Range Limits
+	How to Use: RelMouseReset
+	Notes: ;)
+DECLARE SUB RelMouseLimitXY (BYVAL MinX%, BYVAL MinY%, BYVAL MaxX%, BYVAL MaxY%)
+	Description: Limits the mouse range by MinX,MinY,MaxX,maxY
+	How to Use: RelMouseLimitXY 10,10,100,100
+	Notes: Shows the mouse if nit shown limiting it to the box defined by the above dimensions
+DECLARE SUB RelMouseSetXY (BYVAL X%, BYVAL Y%)
+	Description: Sets the mouse location
+	How to Use: RelMouseSetXY 10,10
+	Notes: Show the mouse if hidden and puts it at the above coordinates.
+DECLARE FUNCTION RelMouseX% ()
+	Description: Returns the X mouse coordinate
+	How to Use: C=RelMouseX
+	Notes: ;)
+DECLARE FUNCTION RelMouseY% ()
+	Description: Returns the Y mouse coordinate
+	How to Use: C=RelMouseY
+	Notes: ;)
+DECLARE FUNCTION RelMouseClick% ()
+	Description: Returns:
+			 1 if Leftbutton is clicked
+			 2 if Rightbutton is clicked
+			 3 if both are clicked at the same time.
+	How to Use: C=RelMouseClick
+	Notes: ;)
+DECLARE FUNCTION RelMouseDetect% ()
+	Description: returns 1  if there is a mouse 0 if otherwise
+	How to Use: C=RelMousedetect
+	Notes: ;)
+DECLARE FUNCTION RelMouseInside (BYVAL MinX%, BYVAL MinY%, BYVAL MaxX%, BYVAL MaxY%)
+	Description: returns 1 if the mouse is inside the box defined by MinX, MinY,MaxX,MaxY
+	How to Use: C=RelMouseInside 10,10,100,100
+	Notes: Used in conjuction with Relmouseclick to see if you clicked on a given area(button)
+
+'/==============IMAGES==============================================
+DECLARE FUNCTION RelLoadBMP% (Layer%, X%, Y%, File$, Pal$, SwitchPal%)
+	Description: Loads a 320*200*256 color bitmap to DestSeg
+			*Switchpal% if TRUE will switch the current palette to the palette of the
+				BMP file
+	How to Use: Dummy=RelLoadBMP(VARSEG(VPAGE(0)), "Crap.BMP",Pal$, TRUE)
+	Notes: Loads the CRAP.BMP file to VPAGE switching the palette to the BMP file pallete
+		and storing Pal to PAL$
+	*Retuns: 0= if successfull.
+	*Error Codes are at the end of this DOC
+		
+DECLARE FUNCTION RelLoadPCX% (Layer%, X%, Y%, File$, Pal$, SwitchPal%)
+	Description: Loads a 320*200*256 color bitmap to DestSeg
+			*Switchpal% if TRUE will switch the current palette to the palette of the
+				BMP file
+	How to Use: Dummy=RelLoadPCX(VARSEG(VPAGE(0)), "Crap.PCX",Pal$, TRUE)
+	Notes: Loads the CRAP.PCX file to VPAGE switching the palette to the PCX file pallete
+		and storing Pal to PAL$
+	*Retuns: 0= if successfull
+	*Error Codes are at the end of this DOC
+
+'/=============PALETTE=============================================
+DECLARE SUB RelReadRGB (ColorVal%, R%, G%, B%)
+	Description:Reads the RGB values of colorval			
+	How to Use: RelReadRGB 100,R,G,B
+			*Reads the RGB values of color 100 putting them in the variables R,G & B
+	Notes: look at the sample files at the Examples folder
+DECLARE SUB RelWriteRGB (ColorNum%, R%, G%, B%)
+	Description:Writes the RGB values to colornum			
+	How to Use: RelWriteRGB 100,63,0,0
+			*Writes the RGB values 63,0,0 to color 100 making it red
+	Notes: look at the sample files at the Examples folder
+DECLARE SUB RelReadPal (PalString$)
+	Description: Reads the current palette storing it in the 768 byte string Palstring$			
+	How to Use: Dim RGBpal as String *768
+			RelReadPal RGBpal
+	Notes: After using this sub, you can use all the palette manipulation of RelLib
+DECLARE SUB RelFade (R%, G%, B%, Counts%)
+	Description: Fades the current palette to the specified RGB values
+			*Counts is a nifty parameter which allows you to specify how many times
+				it takes to completely fade the pal
+	How to Use: RelFade 0,0,0,200
+			*Fades the current pal to black in 200 steps
+			RelFade 0,0,0,0
+			*Instantaneous pal switch to black
+	Notes: Uses vectors instead of integers to fade the palette giving you more control and also 
+		makes the fadeout standardized. Meaning, all the fadeout will arrive at the same
+		time as all the other attributes no matter how near or far the RGB 	difference is.
+		Uses the morphing algorithm. All colors are affected.
+DECLARE SUB RelFadeStep (StartCol%, EndCol%, R%, G%, B%)
+	Description: Fades the colors form Startcol to Endcol to the specified RGB values in steps
+	How to Use: RelFadeStep 100,150,0,0,0
+			*Decrements the RGB values of color 100 to 150 by one
+	Notes: to completely fade call this SUB 64 times. Useful for night and day effects.  See the 
+		RPG demo at the Examples folder.
+DECLARE SUB RelFadeToPal (PalString$, Counts%)
+	Description: Fades the current palette to the palette held by Palstring$
+			*Counts is a nifty parameter which allows you to specify how many times
+			it takes to completely fade the pal
+			*PalString$ is a 768 byte string that holds pal values
+	How to Use: Dim RGBpal as String*768
+			RelFadeToPal RGBpal,200
+			*Fades the current pal to RGBpal in 200 steps
+			RelFadeToPal RGBpal,0
+			*Instantaneous pal switch to RGBpal
+	Notes: Uses vectors instead of integers to fade the palette giving you more control and also 
+		makes the fadeout standardized. Meaning, all the fadeout will arrive at the same
+		time as all the other attributes no matter how near or far the RGB 	difference is.
+		Uses the morphing algorithm. Pls see the example file.
+DECLARE SUB RelFadeToPalStep (StartCol%, EndCol%, PalString$)
+	Description: Fades the current palette to the palette held by PalString$ in steps
+	How to Use: Dim RGBpal as String*768
+			RelFadeToPalStep 100,150,RGBpal
+	Notes: to completely fade call this SUB 64 times. Useful for night and day effects.  See the 
+		RPG demo at the Examples folder.
+DECLARE SUB RelFadeToPalX (StartCol%, EndCol%, PalString$, Counts%)
+	Description: Fades the current palette to the palette held by Palstring$ from StartCol to
+			EndCol. ie, Selective Fade
+			*Counts is a nifty parameter which allows you to specify how many times
+			it takes to completely fade the pal
+			*PalString$ is a 768 byte string that holds pal values
+	How to Use: Dim RGBpal as String*768
+			RelFadeToPalX 100,150,RGBpal,200
+			*Fades Color 100 to 150 to RGBpal in 200 steps
+			RelFadeToPalX 100,150, RGBpal,0
+			*Instantaneous pal switch to RGBpal
+	Notes: Uses vectors instead of integers to fade the palette giving you more control and also
+		makes the fadeout standardized. Meaning, all the fadeout will arrive at the same
+		time as all the other attributes no matter how near or far the RGB 	difference is.
+		Uses the morphing algorithm. Pls see the example file.
+DECLARE SUB RelFadeX (StartCol%, EndCol%, R%, G%, B%, Counts%)
+	Description: Fades the current palette to the specified RGB values from StartCol to EndCol. 
+			ie, Selective Fade
+			*Counts is a nifty parameter which allows you to specify how many times
+			it takes to completely fade the pal
+	How to Use: 	RelFadeX 100,150,63,63,63,200
+			*Fades Color 100 to 150 to bright white in 200 steps
+			RelFadeX 100,150,63,63,63 ,0
+			*Instantaneous pal switch to bright white
+	Notes: Uses vectors instead of integers to fade the palette giving you more control and also
+		makes the fadeout standardized. Meaning, all the fadeout will arrive at the same
+		time as all the other attributes no matter how near or far the RGB 	difference is.
+		Uses the morphing algorithm. Pls see the example file.
+DECLARE SUB RelLoadPal (File$, PalString$, Switch%)
+	Description: Loads an external pal file(File$) storing the palette in the 768 byte paltring$
+			*Switch lets you specify if you want to switch to the palette help by
+				palstring$. if TRUE then switch else...
+	How to Use: Dim RGBpal as String*768
+			1. RelLoadPal "RelPal.Pal",RGBpal,TRUE
+				*Loads the pal and switches the current palette to palstring$
+			2. RelLoadPal "RelPal.Pal",RGBpal,FALSE
+				*Loads the pal and but does not switch colors
+	Notes: See the example file ;-).  File$ should be a 768 byte file(made using RelSavePal)
+DECLARE SUB RelLoadPalPP256 (File$)
+	Description: Loads an external PP256 pal file(File$) 
+			*Switches the colors just included it here to be compatible with PP256
+	How to Use: Dim RGBpal as String*768
+			RelLoadPalPP256 "PPpal.Pal"
+			RelReadPal RGBpal
+			RelSavePal "RelPal.Pal"
+			*Loads a PP256(1024 byte pal file), switching the current palette, Reads
+			the current palette saving it to RGBpal, then Saves the current palette to a
+			768 byte pal file named RelPal.Pal
+	Notes: Very useful for converting a pp256(1024 bytes) format file to the standard 768 byte
+		pal so as not to waste memory(256 bytes is still 256 bytes, don't ya think?).
+		Kackurot gets credit for this one.  In case you're wondering PP256 Pal
+		loader has a BUG that prevents it from running when compiled. :-)
+DECLARE SUB RelNegativePal ()
+	Description: Subracts from 63 each RGB val of the current pal flipping the values producing
+			a "negative" effect
+	How to Use: RelNegativePal
+	Notes: ya hafta see this!!!! See the example files.... ;-)
+DECLARE SUB RelRotatePalB (StartCol%, EndCol%)
+	Description: Rotates the palettes from StartCol to EndCol giving a motion effect backwards.
+	How to Use:      Do
+				RelRotatePalB 100,150
+			Loop until inkey$<>""		
+	Notes: See the example files.... ;-) Plasma anyone? :-)
+DECLARE SUB RelRotatePalF (StartCol%, EndCol%)
+	Description: Rotates the palettes from StartCol to EndCol giving a motion effect Forward.
+	How to Use:      Do
+				RelRotatePalF 100,150
+			Loop until inkey$<>""		
+	Notes: See the example files.... ;-) Plasma anyone? :-)
+DECLARE SUB RelSavePal (File$)
+	Description: Saves the current pal to File$(a 768 byte file)
+	How to Use:  RelSavePal "RelPal.Pal"   
+	Notes: See the example files.... ;-) 
+DECLARE SUB RelSwitchToPal (PalString$)
+	Description: Instantaneous switch to palstring$(768 byte)
+	How to Use:  RelSwitchPal RGBpal
+	Notes: See the example files.... ;-) 
+
+
+'/=============GFX Effects============================================
+DECLARE SUB RelWater (BYVAL DESTSEG%, BYVAL SourceSeg%)
+	Description:Simulates the water effect you see in demos. The difference? This is way
+			faster.			
+	How to Use: RelWater WaterSeg1,WaterSeg2
+	Notes: Used in conjunction with RelRefrac to simulate water on a texture.
+		See the example file called WATER.BAS
+
+DECLARE SUB ReFrac (BYVAL DESTSEG%, BYVAL SourceSeg%, BYVAL TextSeg%)
+	Description:Simulates the water effect you see in demos. The difference? This is way
+			faster.			
+	How to Use: Refrac Layer WaterSeg1,TexSeg
+	Notes: Used in conjunction with Relwater to simulate water on a texture.
+		See the example file called WATER.BAS
+/==========OnSprite SUBS/FUNCTIONS+==============================
+Note:  Special procedures Allegro Style!!! Joakim's subs :*)
+	>The coordinate passed are 0 relative which means that you treat the QB get/put array as a buffer.
+	>You can have as many VARIABLE-SIZED buffer using this routines depending on the memory as this
+		are very memory efficient and used well, could give you some cool FX. Pls. refer to the example file
+		for more details(SpriteON.Bas).
+DECLARE SUB RelPsetOnSprite (BYVAL DESTSprSEG%, BYVAL DESTSprOFF%, BYVAL_
+					X%, BYVAL Y%, BYVAL C%)
+	Description: Puts a pixel on a QB GET/PUT array(DestsprSeg/DestSprOff) at location X,Y
+			color C
+	How to Use: RelPsetOnSprite Varseg(Array(0)),Varptr(Array(0)),10,10,15
+	Notes: Same as QB's Pset routine.   Clipping is supported! 	
+**DECLARE SUB RelPsetOnSpriteT (BYVAL DESTSprSEG%, BYVAL DESTSprOFF%, BYVAL_
+					X%, BYVAL Y%, BYVAL C%)
+	Description: Puts a pixel on a QB GET/PUT array(DestsprSeg/DestSprOff) at location X,Y
+			color C,Translucently!!
+	How to Use: RelPsetOnSpriteT Varseg(Array(0)),Varptr(Array(0)),10,10,15
+	Notes: Same as QB's Pset routine.   Clipping is supported! 	
+DECLARE SUB RelSpriteOnSprite (BYVAL DESTSprSEG%, BYVAL DESTSprOFF%, BYVAL X%, BYVAL Y%,_
+				BYVAL SPRSEG%, BYVAL SPROFF%)
+	Description: Draws a Sprite on a GET/PUT array at coordinate X,Y.  Skips color 0
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteOnSprite VARSEG(Array(0)),VARPTR(ARRAY(0)),10,10,VARSEG(SpriteArray
+			(0)),VARPTR(SpriteArray(Offset))  
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 skipping color 0
+	Notes: Also almost as fast as RelSprite so not a lot has been lost.  Useful for changing the
+		appearance of the sprite or using buffers/pages of different sizes. See example file
+		(SpriteO.Bas). Note: You can do double buffering using this single routine alone.
+		ie. Draw your sprite using this and Blit your buffer using QB's PUT.
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelSpriteOnSpriteS (BYVAL DESTSprSEG%, BYVAL DESTSprOFF%, BYVAL X%, BYVAL Y%,_
+				BYVAL SPRSEG%, BYVAL SPROFF%)
+	Description: Draws a Sprite on a GET/PUT array at coordinate X,Y.  Solidly.
+			Compatible with QB's Get routine :)
+	How to Use: RelSpriteOnSpriteS VARSEG(Array(0)),VARPTR(ARRAY(0)),10,10,VARSEG(SpriteArray
+			(0)),VARPTR(SpriteArray(Offset))  
+			*Offset is the Frame of the Sprite for animation. Puts a Sprite at coordinate 
+			10,10 solidly
+	Notes: Also almost as fast as RelSpriteSolid so not a lot has been lost.  Useful for
+		changing the appearance of the sprite or using buffers/pages of different sizes. See 
+		example file(SpriteO.Bas). Note: You can do double buffering using this single
+		routine alone. ie. Draw your sprite using this and Blit your buffer using QB's PUT.
+		*SUPPORTS CLIPPING!!!!!
+DECLARE FUNCTION RelPointOnSprite% (BYVAL DESTSprSEG%, BYVAL DESTSprOFF%,_
+						BYVAL X%, BYVAL Y%)
+	Description: Returns the color of a pixel on  a QB GET/PUT array(DestsprSeg/DestSprOff)
+			at location X,Y. 
+	How to Use: C=RelPpointOnSprite Varseg(Array(0)),Varptr(Array(0)),10,10
+	Notes: Same as QB's Point routine.   Clipping is supported! 	
+DECLARE SUB RelSmooth (BYVAL Layer%, BYVAL x1%, BYVAL y1%, BYVAL x2%, BYVAL 
+_y2%)
+	Description: Smoothens an area in a layer definded by x1,y1,x2,y2		
+	How to Use: see Smooth.Bas on the examples folder
+	Notes: feedback effffects and tile smoothing. ;*)
+'/======================Mode 7=========================================
+DECLARE SUB RelMode7Map (Layer%, x1%, y1%, x2%, y2%, Angle%, scalex%, scaley%, 
+_scalez%, Horz%, camx!, camy!, Texture%(), TextureOffset%, Map%())
+	Description:  Draws a MAP projected on a Layer ala MarioKart			
+	How to Use: 
+			x1 = 0			'Box bounds
+			y1 = 100
+			x2 = 319
+			y2 = 199
+
+			Angle = 0		Mode 7 Parameters
+			scalex = 200
+			scaley = 200
+			scalez = 15
+			Horz = 5
+			camx! = 0
+			camy! = 0
+    			RelMode7Map Layer%, x1, y1, x2, y2, Angle, scalex, scaley,_
+				 scalez, Horz, px!, py!, Texture%(), 0, Map%()
+	Notes: See the Example Files in the \examples\mode7 directory. See Also Mode7.Txt
+		*SUPPORTS CLIPPING!!!!!
+DECLARE SUB RelMode7 (Layer%, x1%, y1%, x2%, y2%, Angle%, scalex%, scaley%, 
+_calez%, Horz%, camx!, camy!, Texture%(), TextureOffset%)
+			x1 = 0			'Box bounds
+			y1 = 100
+			x2 = 319
+			y2 = 199
+
+			Angle = 0		Mode 7 Parameters
+			scalex = 200
+			scaley = 200
+			scalez = 15
+			Horz = 5
+			camx! = 0
+			camy! = 0
+    			RelMode7 Layer%, x1, y1, x2, y2, Angle%, Scalex, Scaley,_ 
+				Scalez, Horz, px!, py!, Texture%(), 0
+	Notes: See the Example Files in the \examples\mode7 directory. See Also Mode7.Txt
+		*SUPPORTS CLIPPING!!!!!
+
+'/================3d Routines===============================================================
+***********THIS SECTION IS UNDER CONSTRUCTION**********
+DECLARE SUB RelTriF (BYVAL DestSeg%, BYVAL x1%, BYVAL y1%, BYVAL x2%, BYVAL y2%, BYVAL x3%, BYVAL y3%, BYVAL C%)
+	Description: Draws a flat filled triangle
+	How to Use:
+	Notes: 
+DECLARE SUB RelTriG (BYVAL DestSeg%, BYVAL x1%, BYVAL y1%, BYVAL c1%, BYVAL x2%, BYVAL y2%, BYVAL c2%, BYVAL x3%_
+, BYVAL y3%, BYVAL c3%)
+	Description: Draws a Gouraud filled triangle
+	How to Use:
+	Notes: 
+
+DECLARE SUB RelTriT (BYVAL DestSeg%, BYVAL x1%, BYVAL y1%, BYVAL u1%, BYVAL v1%, BYVAL x2%, BYVAL y2%, BYVAL u2%_
+, BYVAL v2%, BYVAL x3%, BYVAL y3%, BYVAL u3%, BYVAL v3%, BYVAL Tseg%, BYVAL Toff%)
+	Description: Draws a Texturedd triangle
+	How to Use:
+	Notes: 
+
+'/================FUNCTIONS===========================================
+DECLARE FUNCTION RelSize% (BYVAL X1%, BYVAL Y1%, BYVAL X2%, BYVAL Y2%)
+	Description: Determines the size needed to dimension an array using this formula:
+			SIZE=(((X2-X1)*(Y2-Y1))\2)+2(Thanks to  Andrew Ayers)
+			*used in conjuction with RelGET
+	How to Use: SizeNeeded=RelSize(0,0,15,15)
+			Calculates the size needed to dimension an array  16*16 in size
+	Notes: Makes dimensioning easier.  Useless if your using PP256.
+DECLARE FUNCTION RelPoint% (BYVAL DestSeg%, BYVAL X%, BYVAL Y%)
+	Description: Works like QB's POINT function. Returns the Pixel Color of destseg at X,Y.
+	How to Use: RelPoint VIDEO,10,10
+			*Returns the color of the screen at 10,10
+	Notes: Used for many puposes........ hehehehehe
+DECLARE FUNCTION RelInside% (BYVAL X%, BYVAL Y%, BYVAL X1%, BYVAL Y1%, BYVAL_
+					X2%, BYVAL Y2%)
+	Description: Returns -1 if Coordinate X,Y is inside the Bounding Box defined by
+				X1,Y1,X2,Y2
+	How to Use: C=RelInside X, Y, 10,10,100,100
+			*Returns the -1(TRUE) if X,Y is inside 0(FALSE) if not.
+	Notes: Used for Block Type Range checking and collision detection
+DECLARE FUNCTION RelInsideC% (BYVAL X%, BYVAL Y%, BYVAL XC%, BYVAL YC%,_
+					BYVAL Radius%)
+	Description: Returns -1 if Coordinate X,Y is inside the Circle defined by
+			XC=centerX,Yc=CenterY,radius=Distance
+	How to Use: C=RelInsideC X, Y, 100,100,50
+			*Returns the -1(TRUE) if X,Y is inside 0(FALSE) if not.
+	Notes: Used for Radar Type range checking(Idea came from a post at a QB board), Very
+			useful for RPGS and could also be used for collision detection. Very
+			FAST!!! No Square Root is used nor any use of FPU.
+DECLARE FUNCTION RelAngle% (BYVAL X1%, BYVAL Y1%, BYVAL X2%, BYVAL Y2%)
+	Description: Returns the angle in degrees(0 to 359) from the source(X1%,Y1%) to the
+			target(X2%,Y2)
+	How to Use: C=RelAngle(20,-10,1000,200)
+			*Returns the Angle in Degrees
+	Notes: Used for bullets(ang vector calcs)/Morphing,etc.  Y-inversed cartesian Fixed so that
+		SIN/COS would work.  For SIN/COS to work, you have to convert degrees to
+		radians using this formula:
+		PI=3.141593
+		IntAngle%=RelAngle(X1,Y1,X2,Y2)
+		Angle!=IntAngle*PI/180
+		* I dont recommend using Radians though as they are far slower.  Better to use
+		360 degree Lookup tables.
+DECLARE FUNCTION RelInsideT% (BYVAL x%, BYVAL y%, BYVAL x1%, BYVAL y1%, BYVAL x2%, BYVAL y2%, BYVAL x3%, BYVAL y3%)
+	Description: Returns -1 if Coordinate X,Y is inside the triangle defined by
+			x1, y1, x2, y2,x3,y3
+	How to Use: C=RelInsideT(X, Y, 100,100,50,150,20,30)
+			*Returns the -1(TRUE) if X,Y is inside 0(FALSE) if not.
+	Notes: Used in 3d game engine.  Ie, 2d gameplay with 3d GFX. Check out my Darius game at my site to see this
+		In action.
+
+'/======================File====================================
+DECLARE FUNCTION RelFindFile$ (Mask$, Attribute%)
+
+	Description: Used to scan a directory for a file or types of file if it/they  exist
+	Returns:  The filename if found else a null  string.	
+	How to use:  
+		*This puts all the filenames in the File$(array) as we are using "*.*" as mask.
+		*ARCHIVE is a File attrbute constand in the BI file.
+		* Mask= String(Mask) fo file. Can accept wildcards.
+		* Attribute =  Attribute of the file(s) to look for
+	[code]
+	REDIM File$(100)
+	File$(0) = RelFindFile("*.*", ARCHIVE)
+	  WHILE File$(Count%) <> ""
+	    Count% = Count% + 1
+	    File$(Count%) = RelFindFile("", 0)
+	  WEND
+	  DirCount% = Count%
+	[end code]
+
+	Notes:
+ 		You can use this to scan the directory for a file or files if it exists using the
+		ask and attribute as filters.
+		You can scan by passing a nul"" string as a mask parameter after you cll it the 
+		firsttime. Check example code.
+		Attribute is a constant as an added filter'
+		List of Constants: 
+		VOLUMELABEL = &H8, DIRECTORY = &H10, ARCHIVE = &H20
+		READONLY = &H1, HIDDEN = &H2, SYSTEMFILE = &H4
+'/======================MISC====================================
+DECLARE SUB RelWait ()
+	Description: waits for vertical retrace
+	How to Use: RelWait
+	Notes: Waits for vertical retrace to make drawing "cleaner" also used for delay.
+DECLARE SUB RelDelay (Msec%)
+	Description: Millisecond delay routine for accuracy
+	How to Use: RelDelay 100
+	Notes: Msec=1000*Sec so to delay for a second, use Reldelay 1000
+DECLARE SUB RelFfix()
+	Description: Speeds up QB's floating point calcs. Thanx v1ctor!!!!
+	How to Use: RelFfix
+	Notes: Once installed, RelFfix is active until you get out of QB.  The original core algo is
+		made by V1ctor. I just modified it a little to suit my needs. Thanks Dude!!!!!  I
+		would recommend using this on all your programs so that it speeds up your
+                       engine. Sometimes even on integers!!!!!!
+
+/==========End of Routines=======================================
+
+
+/==========RelLoadBMP/RelLoadPCX Error Codes=======================
+
+00 = No Error
+02 = File Not Found
+03 = Path not found
+04 = Too many files Open
+05 = Access denied
+06 = Invalid Handle
+07 to 26 = Misc. error code that can be found on Ralf Brown's Int list. ;*)
+255 = unknown error
+
+/==========XmsTileIndex Format====================================
+
+'Type for xms base sprite routines.
+'8 bytes per sprite no matter how big it is.
+
+TYPE XmsTileIndexType
+    Bytes   AS LONG
+    offs    AS LONG
+END TYPE
+
+
+**On the horizon
+	Diagonal line Routine(done!!!!! After more than 10 crashes.... :)) Now, very fast!!!!!
+	Sprite Rotation and Scaling(optimizing.......) Note: Rotation=DONE!!!!!
+		Made it already in QB but couldn't translate it well to ASM
+	Circle and Ellipse routines
+		If I could get it to work....Damn this fixed point math!!!!
+	Triangle routines
+		Yeah right. (I ate my words)
+	Bilinear Filtering and WU pixels(Done!)
+		(Shudders)
+	Real Alpha Blended Translucency
+		Doesn't need a gradient palette to work. Slower though.
+	EMS(Scrapped cuz WINBLOWS XP doesn't like EMS.  Blame MS not me.)
+		Will use XMS instead so no problem. 
+		XMS done. 
+
+**I included the source so that other ASM newbies like me may learn to make their own super fast routines.  I commented the source as much as I can so don't call me stingy.  If somebody learns from my routines, I would love to hear from you. And If I can learn ASM, so can YOU!!!!
+** For any routines you want added to this library, pls. email me about it and I'll see what I can do.
+
+**XMS Tutorial
+
+	THIS SECTION IS BEING WRITTEN
+
+CREDITS:
+
+	GOD/JESUS CHRIST
+		For making me what I am today!!!!
+	Anya Therese Lope(my daughter)
+		For the constant determination to shutdown the computer while I'm making this.
+	Rosmelly Lope
+		For the constant nagging to sleep early.
+	Lily Lope and Peter Lope
+		My parents
+	Marie Cristina and Cristina Marie 
+		My sisters(the above is not a TYPO), my dad used either SWAP or XCHG! j/k
+
+		
+	CGI JOE (Shimmer.Zext.Net) aka Alan O'Hagan
+		For the great tutorial and the help at the boards.  Without you, I could never have
+		done this!!!!  You da man! Mate....
+	Aura Flow Team:
+	Eero Pitkanen
+		The Artist formerly known as EEBRO. For his idea of making some tiles in the
+		game we're developing translucent.
+	Adigun A. Polack
+		For giving Arqanoid a 10/10 and donating some of the coolest SFX/GFX to be used
+		with Space Impakto/Frantic Journey. Now a member of the AuraFlow team. And he 
+		has an AWESOME site now.
+	Bobby Leigh aka Beta_SS
+		For accepting the job I offered to help me code Frantic Journey(he's doing the
+		sounds and sticks) LOL
+		(Eebro,Adigun,Beta_SS and I are working on the project as of the moment)
+	Achmad Aulia aka L_O_J
+		The newest member of the team..... (Working on AFlib)
+
+	WILDCARD(Qbasic.QB45.com),(Qbasicnews.com)
+		For keeping the Qmunity alive and for writing an article for Space Impakto, which
+		paved the way for EEBRO and I to co-develop the game.
+	Hexadecimal Disaster(aka Mario)
+		My cheerleader and my pointman to all my net woes. When are "we" going
+		to realease BB2?
+	Hard Rock(Stars DEV)
+		For a kewl game called Metal QB.  Where's the HTML doc? Don't go away from
+		QB dude.
+	Luis Espinoza aka. Laffin
+		For making me realize that ideal mode is better and easier than MASM mode.  I
+		should have been going to the chatroom ealier buddy.  King of Hacks! And for
+		donating 2 routines(Long2Int and Int2long) to "FOOL" QB.
+	Marc Spencer aka citpes
+		For making some kewl games with this lib. Thanks for the RelGet bug tip.
+	Petter Holmberg
+		Very useful ASM tut.  Now if I could get Absolute Assembly to work.....
+	Gianncarlo(GBgames.com)
+		Best Links site and giving Arqanoid an 82%
+	Jason Earl
+		Without his review of Arqanoid, I would never have found Adigun.
+	Bobby3999(CosmoSoft.Zext.Net) aka Francisco Soto
+		For making the best LIB (CosmoX), I'll still be using your lib for Space Impact so
+		don't worry..
+	Toshihiro Horie
+		Taught me some cool things. And tips on how to play with data structures. A
+		Genius!!!
+	Glenn Stumpff(did I spell it right?)  "The Glenn"	
+		Hands down, your the SMARTEST!  Thanks for the tips. Also a Genius!!!
+	Byron Adams aka Nory-B(Masterminds.co.nz)
+		For telling me to convert the Pure QB RelLib to ASM
+	Andrew L. Ayers
+		For teaching me how do do some kick ass things with QB's Sprites.
+	Chris Chadwick
+		For making PP256.
+	Mr. Moose,Jake and ChaotiC(Masterminds.co.nz) 
+		Couldn't wait to see the finished NEXIUM32 and SnowBrawl
+	Jason Gould
+		Studied his codes to make my routines fast.
+	Angelo Mottola
+		His LIB is the first one I've used.
+	Dark Dread
+		Used his Tileset for some demos and for being an inspiration to make good games.
+	Adam Hyde
+		Also for his excellent ASM tutorial.
+	Andre Brown(Kakurot)
+		For making RelLib as a platform for his Zelda style game. (Quest)
+	Lachie Dazdarian
+		For pointing out the bug in RelDelay which screws up on faster computers, and for
+		releasing the first ever Rellib product.  Finish that Solar Wind-like game my
+		friend.....
+	Joakim Anfelt_Ronne(Joakim_AR)
+		For being honest with regards to UGL(plug_plug) :)
+		*Version 2.0 is dedicated to this guy. :*)
+	Piptol (Marcus Kasumba)
+		Run,run,run as fast as you can... You can't catch me, I'm playing GHINI RUN!!!!
+	V1ctor and Blitz
+		Plugged UGL here. Thank me!!! hehehehe.  
+		v1ctor for allowing me to use the core algo of his Ffix lib.
+		And these guys helped me on the latter parts of ASM coding. Mostly Optimizations.
+	Lawrence Bray Taleon
+		Gaming tips and would be a great military tactician someday(Red Alert II)
+	Jan Aaron Rojas
+		Gaming tips and Gran Turismo II wizard(buy Metal Gear Solid II)
+	Nathan Asshanti
+		For being the first to test this LIB.  Hentai anyone? Try Jill to see one of the best
+		games ever made in QB!!!
+	R@dioman
+		For his kind words and interest in rellib.  Coudn't wait for your RPG dude!
+	Plasma357(Jon Petrosky)
+                        For hosting some of my progs including this.
+            Flingmaster
+                        For interest in the Rellib MOD for DQB. :*)
+            Xchaser, JtM,(BCP)
+                        Can't wait for your project dudes!!!!
+	Jocke the Beast
+		How's the GF?
+            Toonski84/Jofers
+		Pls make me an avatar.....pls...........
+	Neo/Recinos
+		Say hi to Jon P. :*)
+	Vance Velez
+		How could I forget?
+	Wizardlife/M. Purvis
+		For making a darn kool game called Empyrean.
+	Peter Van Zwol
+		For making a darn kool game that I even didn't know used RelLib. ;*)  
+	Oracle
+		For the nudge here and there about the XMSPut routine.
+	Dr. Davidstein
+		For making those nice 3d models I used in my engines.
+	Adosorken/Nekrophidius
+		For being an honest man that he is.
+
+	
+		
+Updates!!!!
+
+Pls/ Read the readme file for updates.
+January 13,2002
+	Made my font routines
+January 15,2002
+	Made my mouse and Bresenham circle routines.	
+January	16,2002
+	Nothing. It's just my B-day!!!!!(27)
+January 23,2002
+	Made my BMP loader
+February 2,2002
+	Added RelSpriteGamma,RelPcopyGamma,RelGammaBlock
+February 26, 2002
+            Added my palette routines.  Vector palette routines.
+March 11,2002
+            After about 10 crashes, optimized my diagonal line routine, diagonal transparent routine
+	and fixed the RelDelay bug.
+March 23
+	Added RelInside(Bounding Box) and RelInsideC(Circular Range Check)
+	Fixed the STUPID RelPset bug.
+March 27
+	Added my Sprite Rotation routines after much optimizations.....
+April 06,2002
+	Added RelGetHi,RelGetLow,RelAddHi,RelAddLow for support for Byte-Sized variables to save memory :*)	
+May 29,2002
+	Added RelSpriteOnSprite and RelSpriteOnSprite and Rescaled my Rotation Tables from 128 to 256 so RelSpriteRotate
+	produces "cleaner" sprites.
+May 31,2002
+	Added RelCollideSpr for a pixel perfect collision detection(extremely fast!!!!!!)
+June 11,2002
+	Added RelPsetOnSprite,RelPsetOnSpriteT,RelPointOnSprite
+June 26,2002
+            Added ReFfix.
+August ???,2002
+	Added the XMS routines
+September 22,2002
+	Added RelAngle
+

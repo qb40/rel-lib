@@ -1,0 +1,230 @@
+MODEL MEDIUM,BASIC
+.STACK 200H
+.386
+.CODE
+
+;FUNCTION RELMOUSEDETECT()
+;PARAMETERS: NONE
+;RETURN: -1 IF MOUSEDETECTED,0 IF OTHERWISE
+;STACK NO CHANGE
+;INT 33,0
+;AX=00
+;ON RETURN:
+;AX=0000 NOT INSTALLED
+;AX=FFFF INSTALLED
+;BX=NUMBER OB BUTTONS
+PUBLIC RELMOUSEDETECT
+RELMOUSEDETECT PROC
+        XOR AX,AX               ;JUST TO BE SURE
+        MOV AX,00               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        CMP AX,0
+JNE MOUSE_INSTALLED
+        XOR AX,AX
+        RET
+MOUSE_INSTALLED:
+        XOR AX,AX
+        MOV AX,-1
+        RET
+RELMOUSEDETECT ENDP
+
+;SUB RELMOUSESHOW()
+;PARAMETERS: NONE
+;STACK NO CHANGE
+;INT 33,1
+PUBLIC RELMOUSESHOW
+RELMOUSESHOW PROC
+        XOR AX,AX               ;JUST TO BE SURE
+        MOV AX,01               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        RET
+RELMOUSESHOW ENDP
+
+;SUB RELMOUSEHIDE()
+;PARAMETERS: NONE
+;STACK NO CHANGE
+;INT 33,2
+PUBLIC RELMOUSEHIDE
+RELMOUSEHIDE PROC
+        XOR AX,AX
+        MOV AX,02               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        RET
+RELMOUSEHIDE ENDP
+
+;FUNCTION RELMOUSEX()
+;PARAMETERS: NONE
+;STACK NO CHANGE
+;RETURNS MOUSE XCOORDINATE
+;INT 33,3
+;CX=X POS(0-639) SHR2? TO GET CORRECTLY IN 13H
+;DX=Y POS(0-199)
+;BX=BUTTON STAT
+;0=LEFT         1=PRESSED
+;1=RIGHT        1=PRESSED
+PUBLIC RELMOUSEX
+RELMOUSEX PROC
+        XOR AX,AX
+        MOV AX,03               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        SHR CX,1                ;CORRECT IT
+        MOV AX,CX
+        RET
+RELMOUSEX ENDP
+
+;FUNCTION RELMOUSEY()
+;PARAMETERS: NONE
+;STACK NO CHANGE
+;RETURNS MOUSE YCOORDINATE
+;INT 33,3
+;CX=X POS(0-639) SHR2? TO GET CORRECTLY IN 13H
+;DX=Y POS(0-199)
+;BX=BUTTON STAT
+;0=LEFT         1=PRESSED
+;1=RIGHT        1=PRESSED
+PUBLIC RELMOUSEY
+RELMOUSEY PROC
+        XOR AX,AX
+        MOV AX,03               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        MOV AX,DX
+        RET
+RELMOUSEY ENDP
+
+;FUNCTION RELMOUSECLICK()
+;PARAMETERS: NONE
+;STACK NO CHANGE
+;RETURNS 1=IF LEFT PRESSED,2=RIGHT PRESSED,3=BOTH
+;INT 33,3
+;CX=X POS(0-639) SHR2? TO GET CORRECTLY IN 13H
+;DX=Y POS(0-199)
+;BX=BUTTON STAT
+;0=LEFT         1=PRESSED
+;1=RIGHT        1=PRESSED
+PUBLIC RELMOUSECLICK
+RELMOUSECLICK PROC
+        XOR AX,AX
+        XOR BX,BX
+        MOV AX,03               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        XOR BH,BH
+        AND BL,11111111B
+        MOV AX,BX
+        RET
+RELMOUSECLICK ENDP
+
+;SUB RELMOUSELIMITXY(BYVAL MINX%,BYVAL MINY%,BYVAL MAXX%,BYVAL MAXY%)
+;PARAMETERS: 4
+;STACK
+;MINX           =10
+;MINY           =8
+;MAXX           =6
+;MAXY           =4
+;QB RET SEG     =2
+;QB RET OFF     =0
+
+        ;HORIZONTAL X
+        ;INT 33,7(AX)
+        ;CX=MINX
+        ;DX=MAXX
+        ;VERTICAL Y
+        ;INT 33,8(AX)
+        ;CX=MINY
+        ;DX=MAXY
+
+PUBLIC RELMOUSELIMITXY
+RELMOUSELIMITXY   PROC
+        MOV BX,BP               ;SAVE BP
+        MOV BP,SP
+        ;SET HORIZ X
+        MOV CX,[BP+10]          ;MINX
+        MOV DX,[BP+6]           ;MAXX
+        SHL CX,1                ;CORRECTION
+        SHL DX,1                ;INTEL IS EVIL!!
+        XOR AX,AX
+        MOV AX,07               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        ;SET VERT Y
+        MOV CX,[BP+8]           ;MINY
+        MOV DX,[BP+4]           ;MAXY
+        XOR AX,AX
+        MOV AX,08               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        MOV CX,[BP+10]          ;X
+        MOV DX,[BP+10]          ;Y   LETS POINT THE CURSOR TO UPPER-LEFT BOUND
+        SHL CX,1                ;AS I SAID, INTEL IS EVIL!!!!!
+        XOR AX,AX
+        MOV AX,04
+        INT 33H
+        
+        MOV BP,BX
+        CALL RELMOUSESHOW
+        RET 8
+RELMOUSELIMITXY ENDP
+
+;SUB RELMOUSESETXY(BYVAL X%,BYVAL Y%)
+;PARAMETERS: 2
+;STACK
+;X              =6
+;Y              =4
+;QB RET SEG     =2
+;QB RET OFF     =0
+;INT 33,4
+;AX=04
+;CX=XPOS
+;DX=YPOS
+
+PUBLIC RELMOUSESETXY
+RELMOUSESETXY   PROC
+        MOV BX,BP               ;SAVE BP
+        MOV BP,SP
+        MOV CX,[BP+6]           ;X
+        MOV DX,[BP+4]           ;Y
+        SHL CX,1                ;CORRECTION INTEL IS EVIL!!
+        XOR AX,AX
+        MOV AX,04               ;ASK INTEL NOT ME
+        INT 33H                 ;DO IT
+        MOV BP,BX
+        CALL RELMOUSESHOW
+        RET 4
+RELMOUSESETXY ENDP
+
+
+;FUNCTION RELMOUSEINSIDE(BYVAL MINX%,BYVAL MINY%,BYVAL MAXX%,BYVAL MAXY%)
+;PARAMETERS: 4
+;RETURNS -1 IF INSIDE,0 IF OTHERWISE
+;STACK
+;MINX           =12
+;MINY           =10
+;MAXX           =8
+;MAXY           =6
+;QB RET SEG     =4
+;QB RET OFF     =2
+;BP             =0
+
+PUBLIC RELMOUSEINSIDE
+RELMOUSEINSIDE   PROC
+        PUSH BP
+        MOV BP,SP
+        XOR AX,AX
+        MOV AX,03
+        INT 33H
+        ;CX=X
+        ;DX=Y
+        XOR AX,AX
+        CMP CX,[BP+12]
+        JL LBL_END_INSIDE
+        CMP CX,[BP+8]
+        JG LBL_END_INSIDE
+        CMP DX,[BP+10]
+        JL LBL_END_INSIDE
+        CMP DX,[BP+6]
+        JG LBL_END_INSIDE     
+        ;NO JUMP SO INSIDE=TRUE
+        MOV AX,-1
+LBL_END_INSIDE:
+        POP BP
+        RET 8
+RELMOUSEINSIDE ENDP
+
+END

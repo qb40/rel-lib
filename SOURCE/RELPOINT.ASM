@@ -1,0 +1,53 @@
+MODEL MEDIUM, BASIC
+.STACK 20H
+.386
+.CODE
+
+;FUNCTION RELPOINT(BYVAL DESTSEG,BYVAL X,BYVAL Y)
+;STACK
+;DEST SEG       =8
+;X              =6
+;Y              =4
+;QB RET SEG     =2
+;QB RET OFF     =0
+;ES:DI          =DEST SEG
+
+PUBLIC RELPOINT
+RELPOINT PROC
+
+MOV CX,BP               ;SAVE BP
+MOV BP,SP               ;POINT SP TO BP
+MOV ES,[BP+8]           ;POINT ES TO DEST
+MOV DX,[BP+4]           ;Y
+CMP DX,0
+        JL LBL_END_POINT
+CMP DX,199
+        JG LBL_END_POINT
+MOV BX, [BP+6]          ;X
+
+CMP BX,0                ;CLIP X
+        JL LBL_END_POINT
+CMP BX,319
+        JG LBL_END_POINT
+
+LEA EDX,[EDX+EDX*4]     ;Y=Y*5
+SHL DX,6                ;Y=5*64=320
+MOV DI,DX               ;POINT DX TO DI(DI=320)
+ADD DI,BX               ;ADD X, DI=Y*320+X
+XOR AH,AH
+MOV AL,ES:[DI]
+MOV BP,CX               ;RESTORE BP
+RET 6
+
+LBL_END_POINT:
+XOR AX,AX
+MOV BP,CX               ;RESTORE BP
+RET 6
+
+RELPOINT ENDP
+END
+
+
+
+
+
