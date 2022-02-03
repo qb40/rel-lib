@@ -1,4 +1,2 @@
 rem Change the directory to the dir you unzip the archive......
 c:\qbasic\qb /L c:\Temp\rellib\rel /ah
-
-
